@@ -1,23 +1,21 @@
 #include "libbpf.h"
 
-static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va_list args)
-{
-	return 0;
-}
-
 int LLVMFuzzerTestOneInput(const uint8_t *data, size_t size) {
-	struct bpf_object *obj = NULL;
-	DECLARE_LIBBPF_OPTS(bpf_object_open_opts, opts);
-	int err;
+    struct bpf_object *obj = NULL;
+    int err;
 
-	libbpf_set_print(libbpf_print_fn);
+    // Open libbpf object from memory
+    obj = bpf_object__open_mem(data, size, NULL);
+    
+    // Check for errors
+    if (!obj) {
+        // Log or report error
+        return 0;
+    }
 
-	opts.object_name = "fuzz-object";
-	obj = bpf_object__open_mem(data, size, &opts);
-	err = libbpf_get_error(obj);
-	if (err)
-		return 0;
+    // Close the libbpf object
+    bpf_object__close(obj);
 
-	bpf_object__close(obj);
-	return 0;
+    return 0;
 }
+
